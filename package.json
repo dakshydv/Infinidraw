@@ -1,5 +1,5 @@
 {
-  "name": "my-turborepo",
+  "name": "infinidraw",
   "private": true,
   "scripts": {
     "build": "turbo run build",
