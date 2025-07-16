@@ -212,6 +212,49 @@ app.post("/room/:roomName", middleware, async (req: request, res) => {
     })
 })
 
+app.get('/room/:roomName', middleware, async (req: request, res) => {
+    const roomName = req.params.roomName;
+    const room = await prisma.room.findFirst({
+        where: {
+            name: roomName
+        }
+    });
+
+    if (!room) {
+        res.json({
+            message: "no room exist with this room name"
+        })
+    };
+    
+    const chat = await prisma.shape.findMany({
+        where: {
+            roomId: room?.id,
+            userId: req.userId
+        },
+        orderBy: {
+            id: "desc"
+        },
+        take: 50
+    });
+
+    res.json({
+        chat
+    })
+
+})
+
+
+app.get('/room/:slug', middleware, async (req, res) => {
+    const roomName = req.params.slug;
+    const room = await prisma.room.findFirst({
+        where: {
+            name: roomName
+        }
+    });
+    res.json({
+        room
+    });
+})
 
 app.listen(3001, () => {
     console.log('express app runing on port 3001');
