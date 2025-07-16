@@ -5,14 +5,22 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { request } from "./config";
 import { middleware } from "./middleware";
+import { JWT_SECRET } from "@repo/common/config"
+import { CreateUserSchema, SignInSchema } from "@repo/common/types";
 
 const app = express();
 app.use(express.json());
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET;
-
 app.post('/signup', async (req, res) => {
+    const data = CreateUserSchema.safeParse(req.body);
+
+    if (!data.success) {
+        res.json({
+            message: "invalid credentials"
+        })
+    }
+
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
@@ -64,6 +72,14 @@ app.post('/signup', async (req, res) => {
 
 
 app.post('/signin', async (req, res) => {
+    const data = SignInSchema.safeParse(req.body);
+
+    if (data.success) {
+        res.json({
+            message: "invalid credentials"
+        })
+    }
+
     const { email, password } = req.body;
 
     if (!email || !password) {

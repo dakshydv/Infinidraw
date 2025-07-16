@@ -1,11 +1,10 @@
 import { WebSocketServer } from "ws";
 import dotenv from "dotenv";
-import jwt, { decode } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
+import { JWT_SECRET } from "@repo/common/config"
 
 const wss = new WebSocketServer({ port: 8080 });
 dotenv.config();
-
-const JWT_SECRET = process.env.JWT_SECRET ?? "";
 
 wss.on('connection', (ws, req) => {
     const url = req.url;
