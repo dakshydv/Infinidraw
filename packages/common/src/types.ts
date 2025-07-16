@@ -7,7 +7,7 @@ export const CreateUserSchema = z.object({
       /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
       "Please enter a valid email address"
     ),
-  name: z.string().min(3).max(20),
+  name: z.string().min(3).max(20).optional(),
   password: z
     .string()
     .min(6, "Password must be at least 6 characters long")

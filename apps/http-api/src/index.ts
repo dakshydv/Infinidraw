@@ -5,12 +5,13 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { request } from "./config";
 import { middleware } from "./middleware";
-import { JWT_SECRET } from "@repo/common/config"
 import { CreateUserSchema, SignInSchema } from "@repo/common/types";
+
 
 const app = express();
 app.use(express.json());
 dotenv.config();
+const JWT_SECRET = process.env.JWT_SECRET
 
 app.post('/signup', async (req, res) => {
     const data = CreateUserSchema.safeParse(req.body);
@@ -74,7 +75,7 @@ app.post('/signup', async (req, res) => {
 app.post('/signin', async (req, res) => {
     const data = SignInSchema.safeParse(req.body);
 
-    if (data.success) {
+    if (!data.success) {
         res.json({
             message: "invalid credentials"
         })
@@ -117,7 +118,7 @@ app.post('/signin', async (req, res) => {
     }
 
     const token = jwt.sign({
-        uesrId: user.id
+        userId: user.id
     }, JWT_SECRET);
 
     res.json({
@@ -126,13 +127,92 @@ app.post('/signin', async (req, res) => {
     });
 })
 
-app.post('/room', middleware, (req: request, res) => {
+app.post('/room', middleware, async (req: request, res) => {
+    const { roomName } = req.body;
+    const userId = req.userId
+    console.log(`roomname is ${roomName}`);
+    console.log(`user id is ${userId}`);
+
+    if (!userId) {
+        res.json({
+            message: "did not receive user id"
+        })
+        return
+    }
+    
+
+    if (!roomName) {
+        res.json({
+            message: "please provide a room name"
+        });
+    }
+
+    const roomExists = await prisma.room.findFirst({
+        where: {
+            name: roomName,
+        }
+    })
+
+    if (roomExists) {
+        res.json({
+            message: "this room already exits, please choose another name"
+        })
+    }
+
+    const room = await prisma.room.create({
+        data: {
+            name: roomName,
+            adminId: userId
+        }
+    })
+
+    if (!room) {
+        res.json({
+            message: "an error occured while creating room"
+        })
+    }
+
     res.json({
-        userId: req.userId
+        message: "room created successfully",
+        roomId: room.id
+    })
+})
+
+app.post("/room/:roomName", middleware, async (req: request, res) => {
+    const roomName = req.params.roomName ?? "";
+    const userId = req.userId;
+
+    if (!roomName) {
+        res.json({
+            message: "provide roomId"
+        })
+    }
+
+    const room = await prisma.room.findFirst({
+        where: {
+            name: roomName
+        }
+    })
+
+    if (!room) {
+        res.json({
+            message: "no room exist with this room name"
+        })
+    }
+
+    const shapes = await prisma.shape.findMany({
+        where: {
+            roomId: room?.id,
+            userId
+        }
+    })
+
+    res.json({
+        shapes
     })
 })
 
 
-app.listen(3000, () => {
-    console.log('express app runing on port 3000');
+app.listen(3001, () => {
+    console.log('express app runing on port 3001');
 })

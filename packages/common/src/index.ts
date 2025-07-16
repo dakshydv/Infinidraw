@@ -1,2 +1,5 @@
+import dotenv from "dotenv";
 
-export const JWT_SECRET = process.env.JWT_SECRET ?? "random";
+dotenv.config();
+
+export const JWT_SECRET = process.env.JWT_SECRET;
