@@ -6,10 +6,11 @@ import dotenv from "dotenv";
 import { request } from "./config";
 import { middleware } from "./middleware";
 import { CreateUserSchema, SignInSchema } from "@repo/common/types";
-
+import cors from "cors";
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET
 
@@ -127,6 +128,7 @@ app.post('/signin', async (req, res) => {
     });
 })
 
+// create new room
 app.post('/room', middleware, async (req: request, res) => {
     const { roomName } = req.body;
     const userId = req.userId
@@ -178,7 +180,8 @@ app.post('/room', middleware, async (req: request, res) => {
     })
 })
 
-app.post("/room/:roomName", middleware, async (req: request, res) => {
+// get shapes
+app.get("/room/shapes/:roomName", middleware, async (req: request, res) => {
     const roomName = req.params.roomName ?? "";
     const userId = req.userId;
 
@@ -204,7 +207,11 @@ app.post("/room/:roomName", middleware, async (req: request, res) => {
         where: {
             roomId: room?.id,
             userId
-        }
+        },
+        orderBy: {
+            id: "desc"
+        },
+        take: 50
     })
 
     res.json({
@@ -212,38 +219,7 @@ app.post("/room/:roomName", middleware, async (req: request, res) => {
     })
 })
 
-app.get('/room/:roomName', middleware, async (req: request, res) => {
-    const roomName = req.params.roomName;
-    const room = await prisma.room.findFirst({
-        where: {
-            name: roomName
-        }
-    });
-
-    if (!room) {
-        res.json({
-            message: "no room exist with this room name"
-        })
-    };
-    
-    const chat = await prisma.shape.findMany({
-        where: {
-            roomId: room?.id,
-            userId: req.userId
-        },
-        orderBy: {
-            id: "desc"
-        },
-        take: 50
-    });
-
-    res.json({
-        chat
-    })
-
-})
-
-
+// get room
 app.get('/room/:slug', middleware, async (req, res) => {
     const roomName = req.params.slug;
     const room = await prisma.room.findFirst({
