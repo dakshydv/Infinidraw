@@ -1,6 +1,6 @@
 "use client"
 import React, { useState, useEffect } from 'react';
-import { Pen, Users, Zap, Download, Play, Menu, X, Star, ArrowRight, Sparkles, MousePointer, Layers, Share2 } from 'lucide-react';
+import { Pen, Users, Play, Menu, X, ArrowRight, Sparkles, MousePointer, Layers, Share2 } from 'lucide-react';
 import Link from 'next/link';
 
 const WhiteboardLanding = () => {

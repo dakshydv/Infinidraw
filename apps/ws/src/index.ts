@@ -11,7 +11,7 @@ const JWT_SECRET = process.env.JWT_SECRET ?? "random";
 
 interface User {
   ws: WebSocket;
-  rooms: string[];
+  rooms: number[];
   userId: number;
 }
 
@@ -100,18 +100,20 @@ wss.on("connection", (ws, req) => {
 
       case MessageType.CHAT:
         {
-          const user = getUser(ws);
-          if (!user) {
-            console.log("no user exit with this connection");
-            ws.close();
-            return;
-          }
+          // const user = getUser(ws);
+          // if (!user) {
+          //   console.log("no user exit with this connection");
+          //   ws.close();
+          //   return;
+          // }
+          const userId = Number(parsedData.userId)
+          const roomId = Number(parsedData.roomId)
 
           await prisma.shape.create({
             data: {
                 message: parsedData.message,
-                userId: user.userId,
-                roomId: parsedData.roomId
+                userId,
+                roomId
             }
           })
 
@@ -124,7 +126,7 @@ wss.on("connection", (ws, req) => {
                 JSON.stringify({
                   type: MessageType.CHAT,
                   message: parsedData.message,
-                  from: user.userId,
+                  // from: user.userId,
                 })
               );
             }

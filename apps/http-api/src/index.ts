@@ -181,32 +181,18 @@ app.post('/room', middleware, async (req: request, res) => {
 })
 
 // get shapes
-app.get("/room/shapes/:roomName", middleware, async (req: request, res) => {
-    const roomName = req.params.roomName ?? "";
-    const userId = req.userId;
+app.get("/room/shapes/:roomId", middleware, async (req: request, res) => {
+    const roomId = Number(req.params.roomId);
 
-    if (!roomName) {
+    if (!roomId) {
         res.json({
             message: "provide roomId"
         })
     }
 
-    const room = await prisma.room.findFirst({
-        where: {
-            name: roomName
-        }
-    })
-
-    if (!room) {
-        res.json({
-            message: "no room exist with this room name"
-        })
-    }
-
     const shapes = await prisma.shape.findMany({
         where: {
-            roomId: room?.id,
-            userId
+            roomId,
         },
         orderBy: {
             id: "desc"
