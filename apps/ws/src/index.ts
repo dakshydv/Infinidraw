@@ -100,12 +100,6 @@ wss.on("connection", (ws, req) => {
 
       case MessageType.CHAT:
         {
-          // const user = getUser(ws);
-          // if (!user) {
-          //   console.log("no user exit with this connection");
-          //   ws.close();
-          //   return;
-          // }
           const userId = Number(parsedData.userId)
           const roomId = Number(parsedData.roomId)
 

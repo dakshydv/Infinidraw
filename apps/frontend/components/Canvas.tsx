@@ -2,16 +2,27 @@
 import { useEffect, useRef } from "react";
 import { drawInit } from "../draw";
 
-export function Canvas({ userId, roomId, socket }: { userId:number, roomId: number, socket: WebSocket }) {
+export function Canvas({
+  userId,
+  roomId,
+  socket,
+  tool,
+}: {
+  userId: number;
+  roomId: number;
+  socket: WebSocket;
+  tool: "rect" | "circle" | "line" | "pointer";
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     if (canvasRef.current) {
-      drawInit(canvasRef.current, userId, roomId, socket);
+      drawInit(canvasRef.current, userId, roomId, socket, tool);
     }
-  }, [canvasRef]);
+  }, [canvasRef, tool]);
+
 
   return (
-    <canvas ref={canvasRef} className="" height={1080} width={1080}></canvas>
+    <canvas ref={canvasRef} className="" height={window.innerHeight} width={window.innerWidth}></canvas>
   );
 }
