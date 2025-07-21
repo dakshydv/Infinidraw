@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getExistingShapes } from "./http";
 
 type shapes =
   | {
@@ -23,8 +24,9 @@ export async function drawInit(
   tool: "rect" | "circle" | "line" | "pointer"
 ) {
   const ctx = canvas.getContext("2d");
-  let existingShapes: shapes[] = await getExistingShapes(roomId);
-  console.log(`tool in outer draw init : ${tool}`);
+  let existingShapes: shapes[] = await getExistingShapes(roomId); 
+  const currentTool = tool
+  console.log(`tool in outer draw init : ${currentTool}`);
 
   if (!ctx) {
     return;
@@ -44,16 +46,26 @@ export async function drawInit(
   let startX = 0;
   let startY = 0;
   clearCanvas(existingShapes, canvas, ctx);
+  
+  function onMouseDown(e) {
+    console.log(`tool on mouse down is ${tool}`);
+    
+    clicked = true;
+    startX = e.clientX;
+    startY = e.clientY;
+  }
 
   function onMouseUp(e) {
+    console.log(`tool on mouseUp is ${tool}`);
+    
     clicked = false;
     let shape: shapes | null = null;
-    const width = e.clientX - startX;
-    const height = e.clientY - startY;
-    console.log(`tool in mouseup is ${tool}`);
-
-    switch (tool) {
+    const width = Math.abs(e.clientX - startX);
+    const height = Math.abs(e.clientY - startY);
+    
+    switch (currentTool) {
       case "rect":
+        console.log(`tool in mouseup is rect`);
         {
           shape = {
             type: "rect",
@@ -62,6 +74,7 @@ export async function drawInit(
             width,
             height,
           };
+          console.log(shape);
           existingShapes.push(shape);
           socket.send(
             JSON.stringify({
@@ -85,6 +98,7 @@ export async function drawInit(
             centerY: startY + length / 2,
             radius: Math.max(width, length) / 2,
           };
+          console.log(shape);
           socket.send(
             JSON.stringify({
               type: "CHAT",
@@ -102,23 +116,19 @@ export async function drawInit(
     }
   }
 
-  function onMouseDown(e) {
-    clicked = true;
-    startX = e.clientX;
-    startY = e.clientY;
-  }
-
   function onMouseMove(e) {
+    console.log(`tool on mouse move is ${tool}`);
+    
     if (clicked) {
-      const width = e.clientX - startX;
-      const length = e.clientY - startY;
+      const width = Math.abs(e.clientX - startX);
+      const length = Math.abs(e.clientY - startY);
       clearCanvas(existingShapes, canvas, ctx);
       ctx.strokeStyle = "rgb(256, 256, 256)";
-      console.log(`tool in mousemove is ${tool}`);
+      console.log(`tool in mousemove is ${currentTool}`);
 
-      if (tool === "rect") {
+      if (currentTool === "rect") {
         ctx.strokeRect(startX, startY, width, length);
-      } else if (tool === "circle") {
+      } else if (currentTool === "circle") {
         console.log("circle on mouse move");
 
         const centerX = startX + width / 2;
@@ -128,9 +138,9 @@ export async function drawInit(
         ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
         ctx.stroke();
         ctx.closePath();
-      } else if (tool === "line") {
+      } else if (currentTool === "line") {
         // TODO: Implement line preview
-      } else if (tool === "pointer") {
+      } else if (currentTool === "pointer") {
         // TODO: Implement pointer preview
       }
     }
@@ -139,11 +149,10 @@ export async function drawInit(
   canvas.addEventListener("mousedown", onMouseDown);
   canvas.addEventListener("mouseup", onMouseUp);
   canvas.addEventListener("mousemove", onMouseMove);
-
   return () => {
     canvas.removeEventListener("mousedown", onMouseDown);
     canvas.removeEventListener("mouseup", onMouseUp);
-    canvas.removeEventListener("mousemove ", onMouseMove);
+    canvas.removeEventListener("mousemove", onMouseMove);
   };
 }
 
@@ -178,29 +187,4 @@ function clearCanvas(
   });
 }
 
-async function getExistingShapes(roomId: number) {
-  try {
-    let existinShapes: shapes[] = [];
-    const res = await axios.get(`http://localhost:3001/room/shapes/${roomId}`, {
-      headers: {
-        authorization:
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsImlhdCI6MTc1Mjc2MDkxN30.olfJhMnGBQQ4wymGvP1c5DbTU3DmVwlCb0GzYnyNDRY",
-      },
-    });
-    const messages = res.data.shapes;
 
-    if (!messages) {
-      return [];
-    }
-
-    const shapes = messages.map((msg: { message: string }) => {
-      const messageData = JSON.parse(msg.message);
-      //   return messageData;
-      existinShapes.push(messageData);
-    });
-    return existinShapes;
-  } catch (err) {
-    console.log(err);
-    return [];
-  }
-}

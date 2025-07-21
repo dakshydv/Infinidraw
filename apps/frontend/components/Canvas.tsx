@@ -1,6 +1,8 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { drawInit } from "../draw";
+import { Engine } from "../draw/engine";
+import { Shapes } from "../config/types";
 
 export function Canvas({
   userId,
@@ -11,18 +13,36 @@ export function Canvas({
   userId: number;
   roomId: number;
   socket: WebSocket;
-  tool: "rect" | "circle" | "line" | "pointer";
+  tool: Shapes;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [engine, setEngine] = useState<Engine>();
 
   useEffect(() => {
-    if (canvasRef.current) {
-      drawInit(canvasRef.current, userId, roomId, socket, tool);
+    if (canvasRef.current && tool) {
+      const newEngine = new Engine(
+        canvasRef.current,
+        roomId,
+        socket,
+        tool,
+        userId
+      );
+      setEngine(newEngine);
     }
-  }, [canvasRef, tool]);
+  }, [canvasRef.current]);
 
+  useEffect(() => {
+    if (engine) {
+      engine.setTool(tool);
+    }
+  }, [tool]);
 
   return (
-    <canvas ref={canvasRef} className="" height={window.innerHeight} width={window.innerWidth}></canvas>
+    <canvas
+      ref={canvasRef}
+      className=""
+      height={window.innerHeight}
+      width={window.innerWidth}
+    ></canvas>
   );
 }

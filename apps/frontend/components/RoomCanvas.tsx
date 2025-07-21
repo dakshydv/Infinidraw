@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Canvas } from "./Canvas";
 import { IconButton } from "./IconButton";
 import { Circle, Minus, Pointer, RectangleHorizontal } from "lucide-react";
+import { Shapes } from "../config/types";
 
 export function RoomCanvas({
   userId,
@@ -12,9 +13,7 @@ export function RoomCanvas({
   roomId: number;
 }) {
   const [socket, setSocket] = useState<WebSocket | null>(null);
-  const [tool, setTool] = useState<"rect" | "circle" | "line" | "pointer">(
-    "rect"
-  );
+  const [tool, setTool] = useState<Shapes>();
 
   useEffect(() => {
     const ws = new WebSocket(
@@ -38,7 +37,13 @@ export function RoomCanvas({
 
   return (
     <div className="relative w-screen h-screen">
-      <Canvas userId={userId} roomId={roomId} socket={socket} tool={tool} />
+      {tool ? (
+        <Canvas userId={userId} roomId={roomId} socket={socket} tool={tool} />
+      ) : (
+        <div className="h-screen w-screen bg-black text-white text-2xl">
+          Welcome to Infinidraw
+        </div>
+      )}
       <div className="fixed right-8 bottom-8 flex-col gap-8  z-10">
         <IconButton
           onClick={() => setTool("rect")}
@@ -59,11 +64,13 @@ export function RoomCanvas({
           }
         />
         <IconButton
-          onClick={() => setTool("line")}
+          onClick={() => setTool("pencil")}
           selectedTool={tool}
           icon={<Minus />}
           theme={
-            tool === "line" ? "bg-[#333] text-[#fff]" : "bg-[#fff] text-[#333]"
+            tool === "pencil"
+              ? "bg-[#333] text-[#fff]"
+              : "bg-[#fff] text-[#333]"
           }
         />
         <IconButton

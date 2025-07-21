@@ -21,3 +21,5 @@ export interface ApiResponse {
   errors?: FormErrors;
   data?: any;
 }
+
+export type Shapes = "rect" | "circle" | "pencil" | "pointer"
