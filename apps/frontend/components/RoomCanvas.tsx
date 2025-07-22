@@ -37,13 +37,7 @@ export function RoomCanvas({
 
   return (
     <div className="relative w-screen h-screen">
-      {tool ? (
-        <Canvas userId={userId} roomId={roomId} socket={socket} tool={tool} />
-      ) : (
-        <div className="h-screen w-screen bg-black text-white text-2xl">
-          Welcome to Infinidraw
-        </div>
-      )}
+      <Canvas userId={userId} roomId={roomId} socket={socket} tool={tool} />
       <div className="fixed right-8 bottom-8 flex-col gap-8  z-10">
         <IconButton
           onClick={() => setTool("rect")}

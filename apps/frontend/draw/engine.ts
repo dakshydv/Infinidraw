@@ -42,7 +42,6 @@ export class Engine {
     canvas: HTMLCanvasElement,
     roomId: number,
     socket: WebSocket,
-    selectedTool: Shapes,
     userId: number
   ) {
     this.canvas = canvas;
@@ -50,11 +49,10 @@ export class Engine {
     this.existingShapes = [];
     this.roomId = roomId;
     this.socket = socket;
-    this.selectedTool = selectedTool;
     this.userId = userId;
-    this.init();
     this.initHandlers();
     this.initMouseHanlders();
+    this.init();
   }
 
   public setTool(tool: Shapes) {
@@ -119,15 +117,23 @@ export class Engine {
 
   initMouseHanlders() {
     this.mouseDownHanlder = (e) => {
+      if (!this.selectedTool) {
+        console.log("no tool selected");
+        return;
+      }
       console.log(`${this.selectedTool} on mouse down in mousehandlers`);
       this.clicked = true;
       this.startX = e.clientX;
       this.startY = e.clientY;
       console.log(`centerX on mousedown is ${e.clientX}`);
       console.log(`centerY on mousedown is ${e.clientY}`);
-    }
+    };
 
     this.mouseUpHanlder = (e) => {
+      if (!this.selectedTool) {
+        console.log("no tool selected");
+        return;
+      }
       console.log(`${this.selectedTool} on mouseup in mousehandlers`);
       this.clicked = false;
       let shape: shapes | null = null;
@@ -168,10 +174,10 @@ export class Engine {
             shape = {
               type: "circle",
               centerX: this.startX + width / 2,
-              centerY: this.startY + length / 2,
-              radius: Math.max(width, length) / 2,
+              centerY: this.startY + height / 2,
+              radius: Math.max(width, height) / 2,
             };
-            this.existingShapes.push(shape)
+            this.existingShapes.push(shape);
             console.log(shape);
             this.socket.send(
               JSON.stringify({
@@ -188,29 +194,33 @@ export class Engine {
         default:
           break;
       }
-    }
+    };
 
     this.mouseMoveHandler = (e) => {
+      if (!this.selectedTool) {
+        console.log("no tool selected");
+        return;
+      }
       console.log(`${this.selectedTool} on mousemove`);
 
       if (this.clicked) {
         const width = e.clientX - this.startX;
-        const length = e.clientY - this.startY;
+        const height = e.clientY - this.startY;
         this.clearCanvas();
         this.ctx.strokeStyle = "rgb(256, 256, 256)";
         console.log(`tool in mousemove is ${this.selectedTool}`);
         console.log(`width in mousemove is ${width}`);
-        console.log(`length in mousemove is ${length}`);
+        console.log(`height in mousemove is ${height}`);
 
         if (this.selectedTool === "rect") {
           console.log("rect inside fnctions");
-          this.ctx.strokeRect(this.startX, this.startY, width, length);
+          this.ctx.strokeRect(this.startX, this.startY, width, height);
         } else if (this.selectedTool === "circle") {
           console.log("circle inside functions");
 
           const centerX = this.startX + width / 2;
-          const centerY = this.startY + length / 2;
-          const radius = Math.max(width, length) / 2;
+          const centerY = this.startY + height / 2;
+          const radius = Math.max(width, height) / 2;
           this.ctx.beginPath();
           this.ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
           this.ctx.stroke();
@@ -221,14 +231,14 @@ export class Engine {
           // TODO: Implement pointer preview
         }
       }
-    }
+    };
 
     this.canvas.addEventListener("mousedown", this.mouseDownHanlder);
     this.canvas.addEventListener("mouseup", this.mouseUpHanlder);
     this.canvas.addEventListener("mousemove", this.mouseMoveHandler);
   }
 
-  cleanUp() {
+  cleanup() {
     this.canvas.removeEventListener("mousedown", this.mouseDownHanlder);
     this.canvas.removeEventListener("mouseup", this.mouseUpHanlder);
     this.canvas.removeEventListener("mousemove", this.mouseMoveHandler);

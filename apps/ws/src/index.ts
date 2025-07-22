@@ -102,6 +102,8 @@ wss.on("connection", (ws, req) => {
         {
           const userId = Number(parsedData.userId)
           const roomId = Number(parsedData.roomId)
+          console.log(parsedData.message);
+          
 
           await prisma.shape.create({
             data: {

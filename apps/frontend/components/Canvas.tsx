@@ -19,15 +19,13 @@ export function Canvas({
   const [engine, setEngine] = useState<Engine>();
 
   useEffect(() => {
-    if (canvasRef.current && tool) {
-      const newEngine = new Engine(
-        canvasRef.current,
-        roomId,
-        socket,
-        tool,
-        userId
-      );
+    if (canvasRef.current) {
+      const newEngine = new Engine(canvasRef.current, roomId, socket, userId);
       setEngine(newEngine);
+
+      return () => {
+        newEngine.cleanup();
+      };
     }
   }, [canvasRef.current]);
 
@@ -35,7 +33,7 @@ export function Canvas({
     if (engine) {
       engine.setTool(tool);
     }
-  }, [tool]);
+  }, [tool, engine]);
 
   return (
     <canvas
