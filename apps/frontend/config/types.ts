@@ -22,4 +22,4 @@ export interface ApiResponse {
   data?: any;
 }
 
-export type Shapes = "rect" | "circle" | "pencil" | "pointer"
+export type Shapes = "rect" | "circle" | "line" | "pointer" | "text"

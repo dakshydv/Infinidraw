@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Canvas } from "./Canvas";
 import { IconButton } from "./IconButton";
-import { Circle, Minus, Pointer, RectangleHorizontal } from "lucide-react";
+import { Circle, Minus, Pointer, RectangleHorizontal, Type } from "lucide-react";
 import { Shapes } from "../config/types";
 
 export function RoomCanvas({
@@ -37,7 +37,11 @@ export function RoomCanvas({
 
   return (
     <div className="relative w-screen h-screen">
-      <Canvas userId={userId} roomId={roomId} socket={socket} tool={tool} />
+      {tool ? (
+        <Canvas userId={userId} roomId={roomId} socket={socket} tool={tool} />
+      ) : (
+        <div className="bg-black w-screen h-screen text-white text-3xl">Welcome to Infinidraw</div>
+      )}
       <div className="fixed right-8 bottom-8 flex-col gap-8  z-10">
         <IconButton
           onClick={() => setTool("rect")}
@@ -58,11 +62,11 @@ export function RoomCanvas({
           }
         />
         <IconButton
-          onClick={() => setTool("pencil")}
+          onClick={() => setTool("line")}
           selectedTool={tool}
           icon={<Minus />}
           theme={
-            tool === "pencil"
+            tool === "line"
               ? "bg-[#333] text-[#fff]"
               : "bg-[#fff] text-[#333]"
           }
@@ -73,6 +77,16 @@ export function RoomCanvas({
           icon={<Pointer />}
           theme={
             tool === "pointer"
+              ? "bg-[#333] text-[#fff]"
+              : "bg-[#fff] text-[#333]"
+          }
+        />
+        <IconButton
+          onClick={() => setTool("text")}
+          selectedTool={tool}
+          icon={<Type />}
+          theme={
+            tool === "text"
               ? "bg-[#333] text-[#fff]"
               : "bg-[#fff] text-[#333]"
           }

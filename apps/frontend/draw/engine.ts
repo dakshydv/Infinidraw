@@ -14,14 +14,21 @@ export type shapes =
       centerX: number;
       centerY: number;
       radius: number;
+    }
+  | {
+      type: "line";
+      startX: number;
+      startY: number;
+      endX: number;
+      endY: number;
+    }
+  | {
+      type: "text";
+      text: string;
+      style: string;
+      x: number;
+      y: number;
     };
-
-// export enum selectedToolType {
-//   rect = "rect",
-//   circle = "cirle",
-//   pencil = "pencil",
-//   pointer = "pointer",
-// }
 
 export class Engine {
   private canvas: HTMLCanvasElement;
@@ -33,9 +40,11 @@ export class Engine {
   private startY = 0;
   private selectedTool: Shapes;
   private userId: number;
+  private input: HTMLTextAreaElement;
   private mouseDownHanlder: (e: MouseEvent) => void;
   private mouseUpHanlder: (e: MouseEvent) => void;
   private mouseMoveHandler: (e: MouseEvent) => void;
+  private mouseClickHandler: (e: MouseEvent) => void;
   socket: WebSocket;
 
   constructor(
@@ -78,6 +87,19 @@ export class Engine {
     };
   }
 
+  informWsServer(shape: shapes) {
+    this.existingShapes.push(shape);
+    this.socket.send(
+      JSON.stringify({
+        type: "CHAT",
+        message: JSON.stringify(shape),
+        roomId: this.roomId,
+        userId: this.userId,
+      })
+    );
+    this.clearCanvas();
+  }
+
   clearCanvas() {
     console.log("clearing canvas");
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -108,6 +130,22 @@ export class Engine {
           }
           break;
 
+        case "line":
+          {
+            this.ctx.moveTo(shape.startX, shape.startY);
+            this.ctx.lineTo(shape.endX, shape.endY);
+            this.ctx.stroke();
+          }
+          break;
+
+        case "text":
+          {
+            this.ctx.fillStyle = shape.style;
+            this.ctx.font = "24px 'Dancing Script', cursive";
+            this.ctx.fillText(shape.text, shape.x, shape.y + 24);
+          }
+          break;
+
         default:
           break;
       }
@@ -115,7 +153,64 @@ export class Engine {
     1;
   }
 
+  initTextDraw(x: number, y: number) {
+    this.input = document.createElement("textarea");
+    this.input.style.color = "#FFFFFF";
+    this.input.autofocus = true;
+    this.input.style.left = `${x}px`;
+    this.input.style.top = `${y}px`;
+    this.input.style.fontSize = "24px"
+    Object.assign(this.input.style, {
+      position: "absolute",
+      display: "inline-block",
+      backfaceVisibility: "hidden",
+      margin: "0",
+      padding: "0",
+      border: `1px dotted white`,
+      outline: "0",
+      resize: "none",
+      background: "transparent",
+      overflowX: "hidden",
+      overflowY: "hidden",
+      overflowWrap: "normal",
+      boxSizing: "content-box",
+      wordBreak: "normal",
+      whiteSpace: "pre",
+      verticalAlign: "top",
+      opacity: "1",
+      wrap: "off",
+      tabIndex: 0,
+      dir: "auto",
+      width: "auto",
+      minHeight: "auto",
+    });
+    document.body.appendChild(this.input);
+    this.input.addEventListener("blur", () => {
+      this.clearCanvas();
+      this.ctx.strokeStyle = "rgb(256, 256, 256)";
+      this.ctx.fillStyle = "white";
+      this.ctx.font = "24px 'Dancing Script', cursive";
+      this.ctx.fillText(this.input.value, x, y);
+      const shape: shapes = {
+        type: "text",
+        text: this.input.value,
+        style: "white",
+        x,
+        y,
+      };
+      this.informWsServer(shape);
+      document.body.removeChild(this.input);
+    });
+    this.selectedTool = null;
+  }
+
   initMouseHanlders() {
+    this.mouseClickHandler = (e) => {
+      if (this.selectedTool === "text") {
+        this.initTextDraw(e.clientX, e.clientY);
+      }
+    };
+
     this.mouseDownHanlder = (e) => {
       if (!this.selectedTool) {
         console.log("no tool selected");
@@ -145,7 +240,6 @@ export class Engine {
 
       switch (this.selectedTool) {
         case "rect":
-          console.log(`tool in mouseup in mousehandlers is rect`);
           {
             shape = {
               type: "rect",
@@ -154,16 +248,7 @@ export class Engine {
               width,
               height,
             };
-            this.existingShapes.push(shape);
-            this.socket.send(
-              JSON.stringify({
-                type: "CHAT",
-                message: JSON.stringify(shape),
-                roomId: this.roomId,
-                userId: this.userId,
-              })
-            );
-            this.clearCanvas();
+            this.informWsServer(shape);
           }
           break;
 
@@ -177,17 +262,22 @@ export class Engine {
               centerY: this.startY + height / 2,
               radius: Math.max(width, height) / 2,
             };
-            this.existingShapes.push(shape);
-            console.log(shape);
-            this.socket.send(
-              JSON.stringify({
-                type: "CHAT",
-                message: JSON.stringify(shape),
-                roomId: this.roomId,
-                userId: this.userId,
-              })
-            );
-            this.clearCanvas();
+            this.informWsServer(shape);
+          }
+          break;
+
+        case "line":
+          {
+            console.log("line on mouseup");
+
+            shape = {
+              type: "line",
+              startX: this.startX,
+              startY: this.startY,
+              endX: e.clientX,
+              endY: e.clientY,
+            };
+            this.informWsServer(shape);
           }
           break;
 
@@ -225,14 +315,18 @@ export class Engine {
           this.ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
           this.ctx.stroke();
           this.ctx.closePath();
-        } else if (this.selectedTool === "pencil") {
-          // TODO: Implement line preview
+        } else if (this.selectedTool === "line") {
+          console.log("line inside functions"); // this needs to be deleted later
+          this.ctx.moveTo(this.startX, this.startY);
+          this.ctx.lineTo(e.clientX, e.clientY);
+          this.ctx.stroke();
         } else if (this.selectedTool === "pointer") {
           // TODO: Implement pointer preview
         }
       }
     };
 
+    this.canvas.addEventListener("click", this.mouseClickHandler);
     this.canvas.addEventListener("mousedown", this.mouseDownHanlder);
     this.canvas.addEventListener("mouseup", this.mouseUpHanlder);
     this.canvas.addEventListener("mousemove", this.mouseMoveHandler);

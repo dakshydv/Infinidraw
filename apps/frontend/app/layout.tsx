@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { DancingScript } from "../config/style";
 import "./globals.css";
 
 const geistSans = localFont({
@@ -23,7 +24,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} bg-black`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} ${DancingScript.className} bg-black`}
+      >
         {children}
       </body>
     </html>
