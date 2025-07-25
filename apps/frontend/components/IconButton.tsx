@@ -13,7 +13,7 @@ export function IconButton({
 }) {
   return <button
     onClick={onClick}
-    className={`p-2 rounded-full ${theme} hover:cursorpoin border-[#ccc] font-medium `}
+    className={`p-2 rounded-md ${theme} hover:cursor-pointer font-medium `}
   >
     {icon}
   </button>;

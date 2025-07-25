@@ -38,7 +38,6 @@ export function Canvas({
   return (
     <canvas
       ref={canvasRef}
-      className=""
       height={window.innerHeight}
       width={window.innerWidth}
     ></canvas>

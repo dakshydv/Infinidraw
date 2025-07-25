@@ -1,3 +1,4 @@
+import { PhoneForwarded } from "lucide-react";
 import { Shapes } from "../config/types";
 import { getExistingShapes } from "./http";
 
@@ -28,6 +29,15 @@ export type shapes =
       style: string;
       x: number;
       y: number;
+    }
+  | {
+      type: "diamond";
+      xLeft: number;
+      xRight: number;
+      yHorizontal: number;
+      xVertical: number;
+      yTop: number;
+      yBottom: number;
     };
 
 export class Engine {
@@ -103,7 +113,7 @@ export class Engine {
   clearCanvas() {
     console.log("clearing canvas");
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.ctx.fillStyle = "rgba(0, 0, 0)";
+    this.ctx.fillStyle = "#121212";
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     this.existingShapes.map((shape) => {
@@ -146,6 +156,20 @@ export class Engine {
           }
           break;
 
+        case "diamond":
+          {
+            this.ctx.moveTo(shape.xLeft, shape.yHorizontal);
+            this.ctx.lineTo(shape.xVertical, shape.yTop);
+            this.ctx.moveTo(shape.xVertical, shape.yTop);
+            this.ctx.lineTo(shape.xRight, shape.yHorizontal);
+            this.ctx.moveTo(shape.xRight, shape.yHorizontal);
+            this.ctx.lineTo(shape.xVertical, shape.yBottom);
+            this.ctx.moveTo(shape.xVertical, shape.yBottom);
+            this.ctx.lineTo(shape.xLeft, shape.yHorizontal);
+            this.ctx.stroke;
+          }
+          break;
+
         default:
           break;
       }
@@ -159,7 +183,7 @@ export class Engine {
     this.input.autofocus = true;
     this.input.style.left = `${x}px`;
     this.input.style.top = `${y}px`;
-    this.input.style.fontSize = "24px"
+    this.input.style.fontSize = "24px";
     Object.assign(this.input.style, {
       position: "absolute",
       display: "inline-block",
@@ -280,6 +304,22 @@ export class Engine {
             this.informWsServer(shape);
           }
           break;
+        case "diamond":
+          {
+            console.log("diamond on mouseup");
+
+            shape = {
+              type: "diamond",
+              xLeft: this.startX,
+              xRight: e.clientX,
+              yHorizontal: (this.startY + e.clientY) / 2,
+              xVertical: (this.startX + e.clientX) / 2,
+              yTop: this.startY,
+              yBottom: e.clientY,
+            };
+            this.informWsServer(shape);
+          }
+          break;
 
         default:
           break;
@@ -320,8 +360,23 @@ export class Engine {
           this.ctx.moveTo(this.startX, this.startY);
           this.ctx.lineTo(e.clientX, e.clientY);
           this.ctx.stroke();
-        } else if (this.selectedTool === "pointer") {
-          // TODO: Implement pointer preview
+        } else if (this.selectedTool === "diamond") {
+          const xLeft = this.startX;
+          const xRight = e.clientX;
+          const yHorizontal = (this.startY + e.clientY) / 2;
+          const xVertical = (this.startX + e.clientX) / 2;
+          const yTop = this.startY;
+          const yBottom = e.clientY;
+
+          this.ctx.moveTo(xLeft, yHorizontal);
+          this.ctx.lineTo(xVertical, yTop);
+          this.ctx.moveTo(xVertical, yTop);
+          this.ctx.lineTo(xRight, yHorizontal);
+          this.ctx.moveTo(xRight, yHorizontal);
+          this.ctx.lineTo(xVertical, yBottom);
+          this.ctx.moveTo(xVertical, yBottom);
+          this.ctx.lineTo(xLeft, yHorizontal);
+          this.ctx.stroke;
         }
       }
     };

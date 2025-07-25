@@ -2,7 +2,14 @@
 import { useEffect, useState } from "react";
 import { Canvas } from "./Canvas";
 import { IconButton } from "./IconButton";
-import { Circle, Minus, Pointer, RectangleHorizontal, Type } from "lucide-react";
+import {
+  Circle,
+  Diamond,
+  Minus,
+  Pointer,
+  RectangleHorizontal,
+  Type,
+} from "lucide-react";
 import { Shapes } from "../config/types";
 
 export function RoomCanvas({
@@ -40,57 +47,49 @@ export function RoomCanvas({
       {tool ? (
         <Canvas userId={userId} roomId={roomId} socket={socket} tool={tool} />
       ) : (
-        <div className="bg-black w-screen h-screen text-white text-3xl">Welcome to Infinidraw</div>
+        <div className="bg-[#121212] w-screen h-screen text-white text-3xl">
+          Welcome to Infinidraw
+        </div>
       )}
-      <div className="fixed right-8 bottom-8 flex-col gap-8  z-10">
-        <IconButton
-          onClick={() => setTool("rect")}
-          selectedTool={tool}
-          icon={<RectangleHorizontal />}
-          theme={
-            tool === "rect" ? "bg-[#333] text-[#fff]" : "bg-[#fff] text-[#333]"
-          }
-        />
-        <IconButton
-          onClick={() => setTool("circle")}
-          selectedTool={tool}
-          icon={<Circle />}
-          theme={
-            tool === "circle"
-              ? "bg-[#333] text-[#fff]"
-              : "bg-[#fff] text-[#333]"
-          }
-        />
-        <IconButton
-          onClick={() => setTool("line")}
-          selectedTool={tool}
-          icon={<Minus />}
-          theme={
-            tool === "line"
-              ? "bg-[#333] text-[#fff]"
-              : "bg-[#fff] text-[#333]"
-          }
-        />
-        <IconButton
-          onClick={() => setTool("pointer")}
-          selectedTool={tool}
-          icon={<Pointer />}
-          theme={
-            tool === "pointer"
-              ? "bg-[#333] text-[#fff]"
-              : "bg-[#fff] text-[#333]"
-          }
-        />
-        <IconButton
-          onClick={() => setTool("text")}
-          selectedTool={tool}
-          icon={<Type />}
-          theme={
-            tool === "text"
-              ? "bg-[#333] text-[#fff]"
-              : "bg-[#fff] text-[#333]"
-          }
-        />
+      <div className="fixed top-8 left-1/2 transform -translate-x-1/2 z-10">
+        <div className="bg-neutral-900 backdrop-blur-sm border border-white/20 rounded-lg py-2 px-3 flex gap-4">
+          <IconButton
+            onClick={() => setTool("rect")}
+            selectedTool={tool}
+            icon={<RectangleHorizontal size={18} />}
+            theme={tool === "rect" ? "bg-[#e0dfff]" : "text-white"}
+          />
+          <IconButton
+            onClick={() => setTool("diamond")}
+            selectedTool={tool}
+            icon={<Diamond size={18} />}
+            theme={tool === "diamond" ? "bg-[#e0dfff]" : "text-white"}
+          />
+          <IconButton
+            onClick={() => setTool("circle")}
+            selectedTool={tool}
+            icon={<Circle size={18} />}
+            theme={tool === "circle" ? "bg-[#e0dfff]" : "text-white"}
+          />
+          <IconButton
+            onClick={() => setTool("line")}
+            selectedTool={tool}
+            icon={<Minus size={18} />}
+            theme={tool === "line" ? "bg-[#e0dfff]" : "text-white"}
+          />
+          <IconButton
+            onClick={() => setTool("pointer")}
+            selectedTool={tool}
+            icon={<Pointer size={18} />}
+            theme={tool === "pointer" ? "bg-[#e0dfff]" : "text-white"}
+          />
+          <IconButton
+            onClick={() => setTool("text")}
+            selectedTool={tool}
+            icon={<Type size={18} />}
+            theme={tool === "text" ? "bg-[#e0dfff]" : "text-white"}
+          />
+        </div>
       </div>
     </div>
   );
