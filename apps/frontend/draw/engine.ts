@@ -158,15 +158,13 @@ export class Engine {
 
         case "diamond":
           {
+            this.ctx.beginPath();
             this.ctx.moveTo(shape.xLeft, shape.yHorizontal);
             this.ctx.lineTo(shape.xVertical, shape.yTop);
-            this.ctx.moveTo(shape.xVertical, shape.yTop);
             this.ctx.lineTo(shape.xRight, shape.yHorizontal);
-            this.ctx.moveTo(shape.xRight, shape.yHorizontal);
             this.ctx.lineTo(shape.xVertical, shape.yBottom);
-            this.ctx.moveTo(shape.xVertical, shape.yBottom);
             this.ctx.lineTo(shape.xLeft, shape.yHorizontal);
-            this.ctx.stroke;
+            this.ctx.stroke();
           }
           break;
 
@@ -368,15 +366,13 @@ export class Engine {
           const yTop = this.startY;
           const yBottom = e.clientY;
 
+          this.ctx.beginPath();
           this.ctx.moveTo(xLeft, yHorizontal);
           this.ctx.lineTo(xVertical, yTop);
-          this.ctx.moveTo(xVertical, yTop);
           this.ctx.lineTo(xRight, yHorizontal);
-          this.ctx.moveTo(xRight, yHorizontal);
           this.ctx.lineTo(xVertical, yBottom);
-          this.ctx.moveTo(xVertical, yBottom);
           this.ctx.lineTo(xLeft, yHorizontal);
-          this.ctx.stroke;
+          this.ctx.stroke();
         }
       }
     };
