@@ -38,7 +38,16 @@ export type shapes =
       xVertical: number;
       yTop: number;
       yBottom: number;
-    };
+    } | {
+      type: "pencil";
+      style: string;
+      cords: Cords[];
+    }
+
+export interface Cords {
+  x: number;
+  y: number;
+}
 
 export class Engine {
   private canvas: HTMLCanvasElement;
@@ -50,6 +59,7 @@ export class Engine {
   private startY = 0;
   private selectedTool: Shapes;
   private userId: number;
+  private freeDrawCords: Cords[] = [];
   private input: HTMLTextAreaElement;
   private mouseDownHanlder: (e: MouseEvent) => void;
   private mouseUpHanlder: (e: MouseEvent) => void;
@@ -168,6 +178,19 @@ export class Engine {
           }
           break;
 
+          case "pencil":
+            {
+              this.ctx.beginPath();
+              this.ctx.moveTo(shape.cords[0].x, shape.cords[0].y);
+              this.ctx.lineCap = "round";
+              this.ctx.lineJoin = "round";
+              shape.cords.map((cords) => {
+                this.ctx.lineTo(cords.x, cords.y);
+              })
+              this.ctx.stroke();
+            }
+            break;
+
         default:
           break;
       }
@@ -242,6 +265,13 @@ export class Engine {
       this.clicked = true;
       this.startX = e.clientX;
       this.startY = e.clientY;
+      if (this.selectedTool === "pencil") {
+        this.freeDrawCords.push({
+          x: this.startX,
+          y: this.startY,
+        });
+        console.log(this.freeDrawCords);
+      }
       console.log(`centerX on mousedown is ${e.clientX}`);
       console.log(`centerY on mousedown is ${e.clientY}`);
     };
@@ -318,6 +348,17 @@ export class Engine {
             this.informWsServer(shape);
           }
           break;
+        case "pencil":
+          {
+            shape = {
+              type: "pencil",
+              cords: this.freeDrawCords,
+              style: "white"
+            }
+            this.informWsServer(shape);
+            this.freeDrawCords = [];
+          }
+          break;
 
         default:
           break;
@@ -345,7 +386,6 @@ export class Engine {
           this.ctx.strokeRect(this.startX, this.startY, width, height);
         } else if (this.selectedTool === "circle") {
           console.log("circle inside functions");
-
           const centerX = this.startX + width / 2;
           const centerY = this.startY + height / 2;
           const radius = Math.max(width, height) / 2;
@@ -372,6 +412,21 @@ export class Engine {
           this.ctx.lineTo(xRight, yHorizontal);
           this.ctx.lineTo(xVertical, yBottom);
           this.ctx.lineTo(xLeft, yHorizontal);
+          this.ctx.stroke();
+        } else if (this.selectedTool === "pencil") {
+          console.log(this.freeDrawCords);
+
+          this.freeDrawCords.push({
+            x: e.clientX,
+            y: e.clientY,
+          });
+          this.ctx.beginPath();
+          this.ctx.lineJoin = "round";
+          this.ctx.lineCap = "round";
+          this.ctx.moveTo(this.freeDrawCords[0].x, this.freeDrawCords[0].y);
+          this.freeDrawCords.map((cords) => {
+            this.ctx.lineTo(cords.x, cords.y);
+          });
           this.ctx.stroke();
         }
       }

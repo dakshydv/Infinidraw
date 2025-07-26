@@ -28,4 +28,5 @@ export type Shapes =
   | "circle"
   | "line"
   | "pointer"
-  | "text";
+  | "text"
+  | "pencil";
