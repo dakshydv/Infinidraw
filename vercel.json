@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "apps/infinidraw/package.json",
+      "use": "@vercel/next@latest"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "apps/infinidraw/$1"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
+}
